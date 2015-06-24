@@ -57,3 +57,6 @@ TARGET_LINK_LIBRARIES(${ProjectName}
   ${OpenMVG_LIBRARIES}
 )
 
+SET_PROPERTY(TARGET ${ProjectName} PROPERTY FOLDER OpenMVG/software/ui)
+INSTALL(TARGETS ${ProjectName} DESTINATION bin/)
+
