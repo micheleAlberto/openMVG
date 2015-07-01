@@ -27,7 +27,7 @@ public:
     const SfM_Data & sfm_data,
     const std::string & soutDirectory,
     const std::string & loggingFile = "",
-    const std::string trackFileName = "");
+    const std::string & trackFileName = "");
 
   ~SequentialSfMReconstructionEngine();
 

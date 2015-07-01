@@ -132,7 +132,7 @@ int main(int argc, char **argv)
   }
   // Matches reading
   std::shared_ptr<Matches_Provider> matches_provider = std::make_shared<Matches_Provider>();
-  if (!sTrackFile.empty() || !matches_provider->load(sfm_data, stlplus::create_filespec(sMatchesDir, "matches.f.txt"))) {
+  if (sTrackFile.empty() && !matches_provider->load(sfm_data, stlplus::create_filespec(sMatchesDir, "matches.f.txt"))) {
     std::cerr << std::endl
       << "Invalid matches file." << std::endl;
     return EXIT_FAILURE;

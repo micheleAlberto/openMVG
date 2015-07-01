@@ -36,11 +36,13 @@ using namespace openMVG::cameras;
 SequentialSfMReconstructionEngine::SequentialSfMReconstructionEngine(
   const SfM_Data & sfm_data,
   const std::string & soutDirectory,
-  const std::string & sloggingFile)
+  const std::string & sloggingFile,
+  const std::string & trackFile)
   : ReconstructionEngine(sfm_data, soutDirectory),
     _sLoggingFile(sloggingFile),
     _initialpair(Pair(0,0)),
-    _camType(EINTRINSIC(PINHOLE_CAMERA_RADIAL3))
+    _camType(EINTRINSIC(PINHOLE_CAMERA_RADIAL3)),
+    _trackFileName(trackFile)
 {
   if (!_sLoggingFile.empty())
   {
@@ -88,7 +90,9 @@ bool SequentialSfMReconstructionEngine::Process() {
   //-- Incremental reconstruction
   //-------------------
 
-  if (!InitLandmarkTracks())
+  if (_trackFileName.empty() && !InitLandmarkTracks())
+    return false;
+  if (!_trackFileName.empty() && !InitLandmarkTracks(_trackFileName))
     return false;
 
   Pair initialPairIndex;
