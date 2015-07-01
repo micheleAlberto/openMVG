@@ -66,12 +66,14 @@ int main(int argc, char **argv)
   std::string sSfM_Data_Filename;
   std::string sMatchesDir;
   std::string sOutDir = "";
+  std::string sTrackFile="";
   std::pair<std::string,std::string> initialPairString("","");
   bool bRefineIntrinsics = true;
   int i_User_camera_model = PINHOLE_CAMERA_RADIAL3;
 
   cmd.add( make_option('i', sSfM_Data_Filename, "input_file") );
   cmd.add( make_option('m', sMatchesDir, "matchdir") );
+  cmd.add( make_option('t', sTrackFile, "trackFile") );
   cmd.add( make_option('o', sOutDir, "outdir") );
   cmd.add( make_option('a', initialPairString.first, "initialPairA") );
   cmd.add( make_option('b', initialPairString.second, "initialPairB") );
@@ -85,6 +87,7 @@ int main(int argc, char **argv)
     std::cerr << "Usage: " << argv[0] << '\n'
     << "[-i|--input_file] path to a SfM_Data scene\n"
     << "[-m|--matchdir] path to the matches that corresponds to the provided SfM_Data scene\n"
+    << "[-t|--trackFile] path to the track file\n"
     << "[-o|--outdir] path where the output data will be stored\n"
     << "[-a|--initialPairA NAME] \n"
     << "[-b|--initialPairB NAME] \n"
@@ -129,7 +132,7 @@ int main(int argc, char **argv)
   }
   // Matches reading
   std::shared_ptr<Matches_Provider> matches_provider = std::make_shared<Matches_Provider>();
-  if (!matches_provider->load(sfm_data, stlplus::create_filespec(sMatchesDir, "matches.f.txt"))) {
+  if (!sTrackFile.empty() || !matches_provider->load(sfm_data, stlplus::create_filespec(sMatchesDir, "matches.f.txt"))) {
     std::cerr << std::endl
       << "Invalid matches file." << std::endl;
     return EXIT_FAILURE;
@@ -151,7 +154,8 @@ int main(int argc, char **argv)
   SequentialSfMReconstructionEngine sfmEngine(
     sfm_data,
     sOutDir,
-    stlplus::create_filespec(sOutDir, "Reconstruction_Report.html"));
+    stlplus::create_filespec(sOutDir, "Reconstruction_Report.html"),
+    sTrackFile);
 
   // Configure the features_provider & the matches_provider
   sfmEngine.SetFeaturesProvider(feats_provider.get());

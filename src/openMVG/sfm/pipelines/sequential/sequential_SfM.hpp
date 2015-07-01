@@ -26,7 +26,8 @@ public:
   SequentialSfMReconstructionEngine(
     const SfM_Data & sfm_data,
     const std::string & soutDirectory,
-    const std::string & loggingFile = "");
+    const std::string & loggingFile = "",
+    const std::string trackFileName = "");
 
   ~SequentialSfMReconstructionEngine();
 
@@ -42,7 +43,7 @@ public:
 
   /// Initialize tracks
   bool InitLandmarkTracks();
-
+  bool InitLandmarkTracks(std::string filename);
   /// Select a candidate initial pair
   bool ChooseInitialPair(Pair & initialPairIndex) const;
 
@@ -88,7 +89,7 @@ private:
   // Parameter
   Pair _initialpair;
   cameras::EINTRINSIC _camType; // The camera type for the unknown cameras
-
+  std::string _trackFileName;
   //-- Data provider
   Features_Provider  * _features_provider;
   Matches_Provider  * _matches_provider;

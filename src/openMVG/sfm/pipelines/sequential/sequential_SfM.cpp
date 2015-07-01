@@ -299,6 +299,92 @@ bool SequentialSfMReconstructionEngine::InitLandmarkTracks()
   return _map_tracks.size() > 0;
 }
 
+class TrackLine {
+    public:
+    TrackLine ():timestamp(0),track_id(0),image_id(0),keypoint_id(0),kp(0.,0.){};
+    std::string timestamp;
+    size_t track_id;
+    size_t image_id;
+    size_t keypoint_id;   
+    std::pair <double,double> kp;
+    std::ostream& print(std::ostream& os){
+        return os <<timestamp
+               <<" "<<track_id
+               <<" "<<image_id
+               <<" "<<keypoint_id
+               <<" "<<kp.first
+               <<" "<<kp.second<<endl;};
+    std::istream& read ( std::istream& in){
+        in >> timestamp ;
+        in >> track_id ;
+        in >> image_id ;
+        in >> keypoint_id;
+        in >> kp.first ;
+        in >> kp.second;
+        return in;};
+    };  
+
+   
+bool loadSTLMAPTracks(tracks::STLMAPTracks & map_tracks, std::string filename){
+    std::ifstream filein(filename.c_str());
+    if (filein.is_open()){
+        map_tracks.clear();
+        //std::istream track_stream (filein);
+        while (filein) {
+            TrackLine trl;
+            trl.read(filein);
+            map_tracks[trl.track_id][trl.image_id]=trl.keypoint_id;
+            };
+        filein.close();
+        return  true;
+        }
+    else {
+        std::cerr << "Invalid: "
+        << filename
+        << " track file." 
+        << std::endl;   
+        return false;};
+    return  true;
+}
+
+bool SequentialSfMReconstructionEngine::InitLandmarkTracks(std::string filename)
+{   loadSTLMAPTracks( _map_tracks,  filename);
+    // cos' è _map_tracks? dove è definito?
+    // in sequential_SfM.hpp , classe SequentialSfMReconstructionEngine 
+    // membro openMVG::tracks::STLMAPTracks _map_tracks;
+    // STLMAPTracks è definito in openMVG/tracks/tracks.hpp
+    // typedef std::map< size_t, submapTrack > STLMAPTracks;
+    // typedef std::map<size_t,size_t> submapTrack;
+    std::cout << std::endl << "Track stats" << std::endl;
+    {
+      std::ostringstream osTrack;
+      //-- Display stats :
+      //    - number of images
+      //    - number of tracks
+      std::set<size_t> set_imagesId;
+      tracks::TracksUtilsMap::ImageIdInTracks(_map_tracks, set_imagesId);
+      osTrack << "------------------" << "\n"
+        << "-- Tracks Stats --" << "\n"
+        << " Tracks number: " << _map_tracks.size() << "\n"
+        << " Images Id: " << "\n";
+      std::copy(set_imagesId.begin(),
+        set_imagesId.end(),
+        std::ostream_iterator<size_t>(osTrack, ", "));
+      osTrack << "\n------------------" << "\n";
+
+      std::map<size_t, size_t> map_Occurence_TrackLength;
+      tracks::TracksUtilsMap::TracksLength(_map_tracks, map_Occurence_TrackLength);
+      osTrack << "TrackLength, Occurrence" << "\n";
+      for (std::map<size_t, size_t>::const_iterator iter = map_Occurence_TrackLength.begin();
+        iter != map_Occurence_TrackLength.end(); ++iter)  {
+        osTrack << "\t" << iter->first << "\t" << iter->second << "\n";
+      }
+      osTrack << "\n";
+      std::cout << osTrack.str();
+    }
+  return _map_tracks.size() > 0;
+  }
+
 /// Export point feature based vector to a matrix [(x,y)'T, (x,y)'T]
 /// Use the camera intrinsics in order to get undistorted pixel coordinates
 template< typename FeaturesT, typename MatT >
